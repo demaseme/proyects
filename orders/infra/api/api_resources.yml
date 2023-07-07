@@ -1,0 +1,33 @@
+Resources: 
+  ApiGwRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow 
+            Principal: 
+              Service: 
+                - apigateway.amazonaws.com
+            Action: 
+              - 'sts:AssumeRole'
+      Description: "Role to allow logs from API to Cloudwatch."
+      ManagedPolicyArns: 
+        - arn:aws:iam::aws:policy/service-role/AmazonAPIGatewayPushToCloudWatchLogs
+      RoleName: ApiGwCloudwatchRole
+      Tags: 
+        - Key: CreatedBy 
+          Value: Serverless
+  HttpApi:
+      Type: AWS::ApiGatewayV2::Api
+      Properties:
+        Name: Order Entry
+        Description: Order Http API 
+        ProtocolType: HTTP
+    
+Outputs: 
+  OrdersHttpApiId: 
+    Description: HttpApi Id
+    Value: !Ref HttpApi
+    Export: 
+      Name: OrdersHttpApiId

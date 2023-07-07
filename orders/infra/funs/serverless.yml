@@ -1,0 +1,45 @@
+service: functions-orders
+
+frameworkVersion: '3'
+
+provider:
+  name: aws
+  runtime: python3.9
+  stage: ${opt:stage, 'dev'}
+  region: ${opt:region, 'us-east-1'}
+  httpApi:
+    id: !ImportValue OrdersHttpApiId
+  iam: 
+    role: 
+      statements:
+        - Effect: 'Allow'
+          Action:
+            - 'events:PutEvents'
+          Resource: '*'
+        - Effect: 'Allow'
+          Action:   
+            - 'dynamoDb:PutItem'
+          Resource: '*'
+  
+package: 
+  individually: true
+functions:
+  orderPublisher:
+    handler: orders.orderPublisher.handler
+    description: function description
+    architecture: arm64
+    runtime: python3.8
+    environment:
+      ORDERS_DYN_TABLE: 'orders-table'
+    events:
+      - httpApi:
+          method: POST
+          path: /v1/post-order
+    package:
+      artifact: ../../orders.zip
+    memorySize: 512
+    timeout: 15
+    name: orderPublisher-Lambda-${self:provider.stage}
+
+resources:
+  - ${file(eventbus_resources.yml)}

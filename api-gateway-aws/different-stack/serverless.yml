@@ -1,0 +1,31 @@
+service: api-from-another-stack
+
+provider:
+  name: aws 
+  runtime: python3.9
+  stage: ${opt:stage, 'dev'}
+  region: ${opt:region, 'us-east-1'}
+  apiGateway:
+    restApiId: 
+      'Fn::ImportValue': MyApiGatewayId
+    restApiRootResourceId: 
+      'Fn::ImportValue': RootResourceApiGateway
+
+
+functions:
+  hello:
+    handler: handler.hello
+    events:
+      - http:
+          path: hello-from-another-stack
+          cors: true
+          method: get
+          integration: mock
+          request:
+            template:
+              application/json: '{"statusCode": 200}'
+          response:
+            template: $input.path('$')
+            statusCodes:
+              201:
+                pattern: ''

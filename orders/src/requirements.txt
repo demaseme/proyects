@@ -1,0 +1,4 @@
+aws-lambda-powertools
+mypy-boto3-events
+boto3-stubs
+boto3-stubs[events]

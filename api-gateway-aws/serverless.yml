@@ -1,0 +1,43 @@
+service: api-export-output
+
+provider:
+  name: aws 
+  runtime: python3.9
+  stage: ${opt:stage, 'dev'}
+  region: ${opt:region, 'us-east-1'}
+  
+	
+functions:
+  hello:
+    handler: handler.hello
+    events:
+      - http:
+          path: hello
+          cors: true
+          method: get
+          integration: mock
+          request:
+            template:
+              application/json: '{"statusCode": 200}'
+          response:
+            template: $input.path('$')
+            statusCodes:
+              201:
+                pattern: ''
+
+resources:
+  Outputs:
+    MyApiGatewayId:
+      Description: API Gateway Id
+      Value: !Ref ApiGatewayRestApi
+      Export:
+        Name: MyApiGatewayId
+    
+    RootResourceApiGateway:
+      Description: API Gateway Id
+      Value: 
+        Fn::GetAtt:
+          - ApiGatewayRestApi
+          - RootResourceId
+      Export:
+        Name: RootResourceApiGateway

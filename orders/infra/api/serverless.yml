@@ -1,0 +1,13 @@
+service: api-orders
+
+frameworkVersion: '3'
+
+provider:
+  name: aws
+  runtime: python3.9
+  stage: ${opt:stage, 'dev'}
+  region: ${opt:region, 'us-east-1'}
+  
+resources:
+  - ${file(api_resources.yml)}
+  - ${file(api_deployment_resources.yml)}

@@ -1,0 +1,6 @@
+Resources: 
+  #EventBridge custom Event Bus
+  OrdersEventBus:
+    Type: AWS::Events::EventBus
+    Properties:
+      Name: OrdersEventBus
