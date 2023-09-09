@@ -1,0 +1,29 @@
+service: certificates
+frameworkVersion: "3"
+
+provider:
+  name: aws
+  runtime: nodejs18.x
+  stage: ${opt:stage, 'dev'}
+  region: ${opt:region, 'us-east-1'}
+
+resources:
+  Resources:
+    MyCertificate:
+      Type: AWS::CertificateManager::Certificate
+      Properties:
+        DomainName: "domainname.com"
+        DomainValidationOptions: 
+            - DomainName: domainname.com
+              HostedZoneId: !ImportValue MyHostedZone
+        ValidationMethod: DNS
+
+  Outputs:
+    MyCertificate:
+      Description: HZ Certificate
+      Value: !Ref MyCertificate
+      Export: 
+        Name: MyCertificate
+    
+    
+        

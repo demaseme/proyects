@@ -1,0 +1,26 @@
+service: hostedzone
+frameworkVersion: "3"
+
+provider:
+  name: aws
+  runtime: nodejs18.x
+  stage: ${opt:stage, 'dev'}
+  region: ${opt:region, 'us-east-1'}
+
+resources:
+  Resources:
+    MyHostedZone:
+      Type: AWS::Route53::HostedZone
+      Properties:
+        HostedZoneConfig:
+          Comment: "HZ for accessing my site in many regions"
+        Name: "domainname.com"
+  
+  Outputs:
+    MyHostedZone:
+      Description: HZ Id
+      Value: !Ref MyHostedZone
+      Export: 
+        Name: MyHostedZone
+
+        

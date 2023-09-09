@@ -1,0 +1,97 @@
+service: api
+frameworkVersion: "3"
+
+provider:
+  name: aws
+  runtime: nodejs18.x
+  stage: ${opt:stage, 'dev'}
+  region: ${opt:region, 'us-east-1'}
+
+resources:
+  Resources:
+    MyAPIGateway:
+        Type: AWS::ApiGateway::RestApi
+        Properties:
+          BinaryMediaTypes:
+            - application/pdf
+            - image/png
+            - image/jpeg
+            - multipart/form-data
+          Description: MultiRegion API
+          Name: my-multiregion-api
+          EndpointConfiguration:
+            Types:
+              - REGIONAL
+
+    MyApiGatewayResourceV1:
+        Type: AWS::ApiGateway::Resource
+        Properties:
+          ParentId:
+            Fn::GetAtt:
+              - MyAPIGateway
+              - RootResourceId
+          PathPart: v1
+          RestApiId:
+            Ref: MyAPIGateway
+
+    MyDomainName:
+      Type: AWS::ApiGateway::DomainName
+      Properties:
+        RegionalCertificateArn: !ImportValue MyCertificate
+        DomainName: domainname.com
+        EndpointConfiguration:
+          Types:
+            - REGIONAL
+        SecurityPolicy: "TLS_1_0"
+
+
+  Outputs:
+    MyAPIGatewayId:
+      Description: API GW Id. 
+      Value:
+        Ref: MyAPIGateway
+      Export: 
+        Name: MyAPIGatewayId
+    MyAPIGatewayRootId:
+      Description: API GW Root Id. 
+      Value:
+        Fn::GetAtt:
+          - MyAPIGateway
+          - RootResourceId
+      Export: 
+        Name: MyAPIGatewayRootId
+    MyApiGatewayResourceV1Id:
+      Description: API GW V1 Id. 
+      Value:
+        Ref: MyApiGatewayResourceV1
+      Export: 
+        Name: MyApiGatewayResourceV1Id
+    MyAPIDomainName:
+      Description: APIGW Domain Name 
+      Value: 
+        Ref: MyDomainName
+      Export: 
+        Name: MyAPIDomainName
+
+    MyAPIRegionalDomainName:
+      Description: APIGW Regional Domain Name 
+      Value: 
+        Fn::GetAtt:
+          - MyDomainName
+          - RegionalDomainName
+      Export: 
+        Name: MyAPIRegionalDomainName
+
+    MyAPIRegionalHostedZoneId:
+      Description: APIGW Regional Domain Name 
+      Value: 
+        Fn::GetAtt:
+          - MyDomainName
+          - RegionalHostedZoneId
+      Export: 
+        Name: MyAPIRegionalHostedZoneId 
+
+
+
+  
+

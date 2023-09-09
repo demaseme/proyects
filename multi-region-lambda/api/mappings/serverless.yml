@@ -1,0 +1,17 @@
+service: api-mapping
+frameworkVersion: "3"
+
+provider:
+  name: aws
+  runtime: nodejs18.x
+  stage: ${opt:stage, 'dev'}
+  region: ${opt:region, 'us-east-1'}
+
+resources:
+  Resources:
+    MyAPIBasePathMapping:
+        Type: AWS::ApiGateway::BasePathMapping
+        Properties:
+          DomainName: !ImportValue MyAPIDomainName
+          RestApiId: !ImportValue MyProcessAPIGatewayId
+          Stage: ${self:provider.stage}

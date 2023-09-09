@@ -1,0 +1,50 @@
+service: api
+frameworkVersion: "3"
+
+provider:
+  name: aws
+  runtime: nodejs18.x
+  stage: ${opt:stage, 'dev'}
+  region: ${opt:region, 'us-east-1'}
+
+custom: 
+  domain_api_url:
+    Fn::Join:
+      - ""
+      - - Fn::ImportValue: MyAPIGatewayId
+        - .execute-api.${self:provider.region}.
+        - Ref: AWS::URLSuffix
+  config:
+    us-east-1:
+      failover_type: PRIMARY
+      rec_set_id: PrimaryRecSet
+    us-west-2:
+      failover_type: SECONDARY
+      rec_set_id: SecondRecSet
+
+resources: 
+  Resources:
+    MyAPIHealthCheck:
+      Type: AWS::Route53::HealthCheck
+      Properties:
+        HealthCheckConfig:
+          EnableSNI: false
+          FullyQualifiedDomainName: ${self:custom.domain_api_url}
+          Port: 443
+          RequestInterval: 30
+          ResourcePath: "${self:provider.stage}/v1/healthcheck"
+          Type: "HTTPS"
+
+    MyAPIRecordSet:
+      Type: AWS::Route53::RecordSet
+      Properties:
+        AliasTarget:
+          DNSName: !ImportValue MyAPIRegionalDomainName
+          EvaluateTargetHealth: true
+          HostedZoneId: !ImportValue MyAPIRegionalHostedZoneId
+        Failover: ${self:custom.config.${self:provider.region}.failover_type}
+        HealthCheckId: !Ref MyAPIHealthCheck
+        HostedZoneId: !ImportValue MyHostedZone
+        Name: domainname.com
+        SetIdentifier: ${self:custom.config.${self:provider.region}.rec_set_id}
+        Type: A 
